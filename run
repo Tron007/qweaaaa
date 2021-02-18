@@ -22,32 +22,43 @@ nnet_enroll_dir=data/verificaiton_data/nnet_dir
 
 # split data&
 
-#prepare data
-/home/exp/v2/olds/createBackgroundModel.sh &&
+
+
+#prepare data 1
+/home/exp/v2/olds/createBackgroundModel_single.sh $1  &&
 
 steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 1 --cmd "$train_cmd" \
   $test_data_trials $test_data_trials/make_mfcc $mfccdir
 sid/compute_vad_decision.sh --nj 1 --cmd "$train_cmd" \
   $test_data_trials $test_data_trials/make_vad $vaddir &&
 
-
 #Extract x-vectors used in the evaluation.
-sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 1  --use-gpu false \
+sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 1  --use-gpu true \
   $nnet_dir $test_data_trials \
   $nnet_enroll_dir/$1
 
-# utils/combine_data.sh data/verificaiton_data/all_enroll_data data/verificaiton_data/emp data/verificaiton_data/enroll_data
+
+#prepare data 2
+/home/exp/v2/olds/createBackgroundModel_single.sh $2  &&
+
+steps/make_mfcc.sh --write-utt2num-frames true --mfcc-config conf/mfcc.conf --nj 1 --cmd "$train_cmd" \
+  $test_data_trials $test_data_trials/make_mfcc $mfccdir
+sid/compute_vad_decision.sh --nj 1 --cmd "$train_cmd" \
+  $test_data_trials $test_data_trials/make_vad $vaddir &&
+
+#Extract x-vectors used in the evaluation.
+sid/nnet3/xvector/extract_xvectors.sh --cmd "$train_cmd --mem 4G" --nj 1  --use-gpu true \
+  $nnet_dir $test_data_trials \
+  $nnet_enroll_dir/$2
 
 
 # creat trial file
 
 
 # simple score count from one file
-# $train_cmd exp/scores/log/test_data_scoring.log \
-#   ivector-plda-scoring --normalize-length=true \
-#   "ivector-copy-plda --smoothing=0.0 $nnet_dir/xvectors_train/plda - |" \
-#   "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$test_data_trials/xvectors_enroll/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-#   "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$test_data_trials/xvectors_test/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
-#   "cat $test_data_trials/trial_verificaiton | cut -d\  --fields=1,2 |" exp/scores_test_data || exit 1;
-
-
+$train_cmd exp/scores/log/test_data_scoring.log \
+  ivector-plda-scoring --normalize-length=true \
+  "ivector-copy-plda --smoothing=0.0 $nnet_dir/xvectors_train/plda - |" \
+  "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$nnet_enroll_dir/$1/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+  "ark:ivector-subtract-global-mean $nnet_dir/xvectors_train/mean.vec scp:$nnet_enroll_dir/$2/xvector.scp ark:- | transform-vec $nnet_dir/xvectors_train/transform.mat ark:- ark:- | ivector-normalize-length ark:- ark:- |" \
+  "cat $test_data_trials/trial_verificaiton | cut -d\  --fields=1,2 |" exp/scores_test_data || exit 1;
