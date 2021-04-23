@@ -1,10 +1,1 @@
-Подключиться к конференции Zoom 
-https://us04web.zoom.us/j/76279058204?pwd=OTRQVjFDaVF5Z1pVc2xNaWpDZ3ZOdz09 
 
-
-https://storage.googleapis.com/herdre/asr_public_phone_calls_1.tar.gz
-https://storage.googleapis.com/herdre/asr_public_phone_calls_2.tar.gz
-https://storage.googleapis.com/herdre/text.docx
-
-Идентификатор конференции: 762 7905 8204 
-Код доступа: 7JfAWr
